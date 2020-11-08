@@ -6,7 +6,8 @@ services:
     restart: always
     build: .
     networks:
-      - backend
+      backend:
+        external: true
     ports:
       - "4000:4000"
     external_links:
