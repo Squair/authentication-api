@@ -1,24 +1,39 @@
-POST http://localhost:3000/register
+
+### Get users
+GET http://localhost:4000/users
+Content-Type: application/json
+
+### Correct register
+POST http://localhost:4000/register
 Content-Type: application/json
 
 { 
-    "name": "user1",
+    "username": "georgesquair@gmail.com",
     "password": "password"
 }
 
-###
-POST http://localhost:3000/login
+### Correct login
+POST http://localhost:4000/login
 Content-Type: application/json
 
 {
-    "name": "user1",
+    "username": "georgesquair@gmail.com",
     "password": "password"
 }
 
-###
-POST http://localhost:3000/delete
+### Incorrect login
+POST http://localhost:4000/login
 Content-Type: application/json
 
 {
-    "name": "user1"
+    "username": "georgesquair@gmail.com",
+    "password": "passwod"
+}
+
+### Delete user
+POST http://localhost:4000/delete
+Content-Type: application/json
+
+{
+    "username": "georgesquair@gmail.com"
 }

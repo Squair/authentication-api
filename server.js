@@ -1,127 +1,78 @@
-const express = require('express')
-const app = express()
+import express from 'express';
+import dotenv from 'dotenv';
+dotenv.config();
+
+//Mongodb
+import mongooseConnection from './source/dbConnection.js'
+import userModel from './source/userModel.js';
+
 //Used for hashing passwords
-const bcrypt = require('bcrypt')
-//File system with promises
-const fs = require('fs').promises
-const bodyParser = require('body-parser');
+import bcrypt from 'bcrypt';
+import bodyParser from 'body-parser';
+
+//JWT
+import jwt from 'jsonwebtoken';
+
+const app = express();
+
+mongooseConnection.connect();
 
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(express.json())
+app.use(express.json());
 
 //GET /users reads users from file and returns them in json
 app.get('/users', async (req, res) => {
-    json = await getUsers()
-    res.json(json)
-})
-
-//GET /register returns the register html page
-app.get('/register', (req, res) => {
-    res.sendFile(__dirname + '/register.html')
-})
+    let json = await userModel.getUsers();
+    res.status(200).json(json);
+});
 
 //POST /register will try to register a new user and add them to users.json
 app.post('/register', async (req, res) => {
     try {
-        //Get users
-        let users = await getUsers()
-
         //Check if username already exists, otherwise create user
-        if (!getExistingUser(users, req.body.name)) {
-            await createNewUser(users, req.body.name, req.body.password)
-            res.send("user created")
-            return res.status(201).send()
+        if (!await userModel.getExistingUser(req.body.username, res)) {
+            await userModel.createNewUser(req.body.username, req.body.password, res);
         } else {
-            return res.status(500).send("User already exists")
+            res.status(409).send("A user with that username already exists.");
         }
     } catch {
-        res.status(500).send("Something went wrong registering new user")
+        res.status(500).send("Something went wrong when trying to register a new user.");
     }
-})
-
-//GET /delete returns the delete html page
-app.get('/delete', (req, res) => {
-    res.sendFile(__dirname + '/delete.html')
-})
+});
 
 //POST /delete will try to delete a user, checking they exist to be deleted first
 app.post('/delete', async (req, res) => {
     try {
-        let users = await getUsers()
         //If they exist delete otherwise return error response
-        if (getExistingUser(users, req.body.name)) {
-            deleteUser(users, req.body.name)
-            res.status(200).send("Deleted user")
+        if (await userModel.getExistingUser(req.body.username)) {
+            await userModel.deleteUser(req.body.username, res);
         } else {
-            res.status(500).send("Failed to delete user, they dont exist")
+            res.status(404).send(`Could not delete user ${req.body.username} as they don't exist.`);
         }
     } catch {
         res.status(500).send("Failed to delete user")
     }
-})
-
-//GET /login returns the login html page
-app.get('/login', (req, res) => {
-    res.sendFile(__dirname + '/login.html')
-})
+});
 
 app.post('/login', async (req, res) => {
     try {
-        //Get users
-        let users = await getUsers()
-
-        //Get user details from file
-        foundUser = getExistingUser(users, req.body.name)
+        let foundUser = await userModel.getExistingUser(req.body.username, res);
         if (!foundUser) {
-            return res.status(404).send('Cannot find user')
+            return res.status(404).send(`There is no user with username: ${req.body.username}.`);
         }
 
         //Compare hashed passwords, if match login, otherwise reject
         if (await bcrypt.compare(req.body.password, foundUser.password)) {
-            res.send("Success");
+            //Uses HMAC SHA256 as encryption method by default, sign using secret token from .env file
+            const accessToken = jwt.sign(req.body.username, process.env.ACCESS_TOKEN_SECRET);
+            return res.status(200).json({ accessToken: accessToken });
         } else {
-            res.send("Passwords do not match")
+            return res.status(403).send("The password you entered is incorrect.");
         }
     } catch {
-        res.status(500).send("Error logging in")
+        return res.status(500).send("Something went wrong while trying to login.");
     }
-})
+});
 
-app.listen(3000)
+app.listen(process.env.PORT);
 
-//Read users.json and return file, if empty return empty array
-async function getUsers() {
-    let json = await fs.readFile('./users.json', 'utf8', (err, data) => {
-                if (err) {
-                    return res.status(500).send(err)
-                } else {
-                    res.status(200).send("Read succesfully")
-                    return data
-                }
-            })
-    return json.length > 0 ? JSON.parse(json) : []
-}
-
-//Check to see if user already exists
-function getExistingUser(users, username) {
-    return users.find(users => users.name === username)
-}
-
-//Map data to json object, hash password and push into users array before rewriting to file
-async function createNewUser(users, user, password) {
-    const hashPass = await bcrypt.hash(password, 10)
-    const newUser =
-    {
-        id: users.length + 1,
-        name: user,
-        password: hashPass
-    }
-    users.push(newUser)
-    return await fs.writeFile('users.json', JSON.stringify(users, null, 4))
-}
-
-//Filter the users in users.json and rewrite new file
-async function deleteUser(users, username) {
-    let newUsers = users.filter(x => x.name !== username)
-    return await fs.writeFile('users.json', JSON.stringify(newUsers, null, 4))
-}
