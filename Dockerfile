@@ -1,5 +1,7 @@
 FROM node:alpine
 
+RUN apk add python make gcc g++
+
 RUN mkdir -p /usr/src/app
 
 WORKDIR /usr/src/app
