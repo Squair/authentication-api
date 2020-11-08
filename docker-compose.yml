@@ -5,6 +5,8 @@ services:
     image: authentication_server
     restart: always
     build: .
+    networks:
+      - backend
     ports:
       - "4000:4000"
     external_links:
