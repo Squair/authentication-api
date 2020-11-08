@@ -76,3 +76,4 @@ app.post('/login', async (req, res) => {
 
 app.listen(process.env.PORT);
 
+export default app;
