@@ -77,15 +77,15 @@ app.post('/login', async (req, res) => {
         //Compare hashed passwords, if match login, otherwise reject
         if (await bcrypt.compare(req.body.password, foundUser.password)) {
             //Uses HMAC SHA256 as encryption method by default, sign using secret token from .env file
-            const accessToken = jwt.sign(foundUser, process.env.ACCESS_TOKEN_SECRET, {
-                expiresIn: "5m"
+            const accessToken = jwt.sign({user: foundUser}, process.env.ACCESS_TOKEN_SECRET, {
+                expiresIn: '1h'
             });
             return res.status(200).send({ accessToken: accessToken });
         } else {
             return res.status(403).send({ message: "The password you entered is incorrect." });
         }
-    } catch {
-        return res.status(500).send({ message: "Something went wrong while trying to login." });
+    } catch (err) {
+        return res.status(500).send({ message: `Something went wrong while trying to login: ${err}` });
     }
 });
 
@@ -98,15 +98,15 @@ app.post('/validateToken', async (req, res) => {
         }
 
         //Verify the token using secret key from .env file and return user if valid
-        jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
+        jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
             if (err) {
                 return res.status(403).send({ message: "Token is not valid." });
             } else {
-                return res.status(200).send(user);
+                return res.status(200).send(decoded.user);
             }
         });
-    } catch {
-        return res.status(500).send({ message: "Something went wrong while trying to validate access token." });
+    } catch (e) {
+        return res.status(500).send({ message: `Something went wrong while trying to validate access token. ${e}` });
     }
 });
 
