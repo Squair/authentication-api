@@ -67,19 +67,42 @@ app.post('/login', async (req, res) => {
     try {
         let foundUser = await userModel.getExistingUser(req.body.username, res);
         if (!foundUser) {
-            return res.status(404).send(`There is no user with username: ${req.body.username}.`);
+            return res.status(404).send({ message: `Could not find a user with the username: ${req.body.username}.` });
         }
 
         //Compare hashed passwords, if match login, otherwise reject
         if (await bcrypt.compare(req.body.password, foundUser.password)) {
             //Uses HMAC SHA256 as encryption method by default, sign using secret token from .env file
-            const accessToken = jwt.sign(req.body.username, process.env.ACCESS_TOKEN_SECRET);
-            return res.status(200).json({ accessToken: accessToken });
+            const accessToken = jwt.sign(foundUser, process.env.ACCESS_TOKEN_SECRET, {
+                expiresIn: "5m"
+            });
+            return res.status(200).send({ accessToken: accessToken });
         } else {
-            return res.status(403).send("The password you entered is incorrect.");
+            return res.status(403).send({ message: "The password you entered is incorrect." });
         }
     } catch {
-        return res.status(500).send("Something went wrong while trying to login.");
+        return res.status(500).send({ message: "Something went wrong while trying to login." });
+    }
+});
+
+app.post('/validateToken', async (req, res) => {
+    try {
+        let accessToken = req.body.accessToken;
+
+        if (accessToken == null) {
+            return res.sendStatus(400).send({ message: "accessToken was null." });
+        }
+
+        //Verify the token using secret key from .env file and return user if valid
+        jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
+            if (err) {
+                return res.status(403).send({ message: "Token is not valid." });
+            } else {
+                return res.status(200).send(user);
+            }
+        });
+    } catch {
+        return res.status(500).send({ message: "Something went wrong while trying to validate access token." });
     }
 });
 
