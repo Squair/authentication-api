@@ -13,6 +13,15 @@ import bodyParser from 'body-parser';
 //JWT
 import jwt from 'jsonwebtoken';
 
+//TODO: Implement https
+
+//const key = fs.readFileSync(__dirname + '/../certs/selfsigned.key', 'utf8');
+//const cert = fs.readFileSync(__dirname + '/../certs/selfsigned.crt', 'utf8');
+//const credentials = {
+//  key: key,
+//  cert: cert
+//};
+
 const app = express();
 
 mongooseConnection.connect();
@@ -74,6 +83,12 @@ app.post('/login', async (req, res) => {
     }
 });
 
-app.listen(process.env.PORT);
+//const httpServer = http.createServer(app);
+//const httpsServer = https.createServer(credentials, app);
+
+//httpServer.listen(process.env.PORT);
+//httpsServer.listen(process.env.PORT);
+
+app.listen(process.env.HTTP_PORT);
 
 export default app;
