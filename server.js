@@ -13,6 +13,9 @@ import bodyParser from 'body-parser';
 //JWT
 import jwt from 'jsonwebtoken';
 
+//Allow CORS requests
+import cors from 'cors';
+
 //TODO: Implement https
 
 //const key = fs.readFileSync(__dirname + '/../certs/selfsigned.key', 'utf8');
@@ -26,6 +29,7 @@ const app = express();
 
 mongooseConnection.connect();
 
+app.use(cors({origin: '*'}));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());
 
