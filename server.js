@@ -43,14 +43,14 @@ app.get('/users', async (req, res) => {
 //POST /register will try to register a new user and add them to users.json
 app.post('/register', async (req, res) => {
     try {
+        let errorMessages = []
+
         //Check if username already exists, otherwise create user
         if (!await userModel.getExistingUser(req.body.username, res)) {
-
             //Check fields are schema valid.
             let document = new userSchema({ username: req.body.username, password: req.body.password });
             await document.validate(async (validateErrors) => {
                 if (validateErrors) {
-                    let errorMessages = [];
                     Object.keys(validateErrors.errors).forEach((error) => {
                         errorMessages = [...errorMessages, { field: validateErrors.errors[error].path, message: validateErrors.errors[error].message }]
                     });
@@ -61,10 +61,12 @@ app.post('/register', async (req, res) => {
             });
 
         } else {
-            return res.status(409).send({ message: "A user with that username already exists." });
+            errorMessages = [...errorMessages, { field: "username", message: "A user with that username already exists." }]
+            return res.status(409).send(errorMessages);
         }
     } catch (err) {
-        return res.status(500).send({ message: `Something went wrong when trying to register a new user: ${err}` });
+        errorMessages = [...errorMessages, { field: "username", message: "A user with that username already exists." }]
+        return res.status(500).send(errorMessages);
     }
 });
 
