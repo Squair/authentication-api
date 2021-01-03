@@ -47,9 +47,9 @@ app.post('/register', async (req, res) => {
         if (!await userModel.getExistingUser(req.body.username, res)) {
 
             //Check fields are schema valid.
-            let document = new userSchema({username: req.body.username, password: req.body.password});
+            let document = new userSchema({ username: req.body.username, password: req.body.password });
             await document.validate(async (validateErrors) => {
-                if (validateErrors){
+                if (validateErrors) {
                     let errorMessages = [];
                     Object.keys(validateErrors.errors).forEach((error) => {
                         errorMessages = [...errorMessages, { field: validateErrors.errors[error].path, message: validateErrors.errors[error].message }]
@@ -59,7 +59,7 @@ app.post('/register', async (req, res) => {
                     return await userModel.createNewUser(req.body.username, req.body.password, res);
                 }
             });
-            
+
         } else {
             return res.status(409).send({ message: "A user with that username already exists." });
         }
@@ -79,12 +79,17 @@ app.post('/delete', async (req, res) => {
         }
     } catch {
         return res.status(500).send({ message: "Failed to delete user" });
-        
     }
 });
 
 app.post('/login', async (req, res) => {
     try {
+        if (req.body.username == undefined || req.body.username == '') {
+            return res.status(400).send({ message: "Username is required." });
+        } else if (req.body.password == undefined || req.body.password == '') {
+            return res.status(400).send({ message: "Password is required." });
+        }
+
         let foundUser = await userModel.getExistingUser(req.body.username, res);
         if (!foundUser) {
             return res.status(404).send({ message: `Could not find a user with the username: ${req.body.username}.` });
