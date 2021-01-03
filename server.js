@@ -5,6 +5,7 @@ dotenv.config();
 //Mongodb
 import mongooseConnection from './source/dbConnection.js'
 import userModel from './source/userModel.js';
+import userSchema from './schema/userSchema.js';
 
 //Used for hashing passwords
 import bcrypt from 'bcrypt';
@@ -29,7 +30,7 @@ const app = express();
 
 mongooseConnection.connect();
 
-app.use(cors({origin: '*'}));
+app.use(cors({ origin: '*' }));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());
 
@@ -44,12 +45,26 @@ app.post('/register', async (req, res) => {
     try {
         //Check if username already exists, otherwise create user
         if (!await userModel.getExistingUser(req.body.username, res)) {
-            await userModel.createNewUser(req.body.username, req.body.password, res);
+
+            //Check fields are schema valid.
+            let document = new userSchema({username: req.body.username, password: req.body.password});
+            await document.validate(async (validateErrors) => {
+                if (validateErrors){
+                    let errorMessages = [];
+                    Object.keys(validateErrors.errors).forEach((error) => {
+                        errorMessages = [...errorMessages, { field: validateErrors.errors[error].path, message: validateErrors.errors[error].message }]
+                    });
+                    return res.status(400).send(errorMessages);
+                } else {
+                    return await userModel.createNewUser(req.body.username, req.body.password, res);
+                }
+            });
+            
         } else {
-            res.status(409).send("A user with that username already exists.");
+            return res.status(409).send({ message: "A user with that username already exists." });
         }
-    } catch {
-        res.status(500).send("Something went wrong when trying to register a new user.");
+    } catch (err) {
+        return res.status(500).send({ message: `Something went wrong when trying to register a new user: ${err}` });
     }
 });
 
@@ -58,12 +73,13 @@ app.post('/delete', async (req, res) => {
     try {
         //If they exist delete otherwise return error response
         if (await userModel.getExistingUser(req.body.username)) {
-            await userModel.deleteUser(req.body.username, res);
+            return await userModel.deleteUser(req.body.username, res);
         } else {
-            res.status(404).send(`Could not delete user ${req.body.username} as they don't exist.`);
+            return res.status(404).send({ message: `Could not delete user ${req.body.username} as they don't exist.` });
         }
     } catch {
-        res.status(500).send("Failed to delete user")
+        return res.status(500).send({ message: "Failed to delete user" });
+        
     }
 });
 
@@ -77,7 +93,7 @@ app.post('/login', async (req, res) => {
         //Compare hashed passwords, if match login, otherwise reject
         if (await bcrypt.compare(req.body.password, foundUser.password)) {
             //Uses HMAC SHA256 as encryption method by default, sign using secret token from .env file
-            const accessToken = jwt.sign({user: foundUser}, process.env.ACCESS_TOKEN_SECRET, {
+            const accessToken = jwt.sign({ user: foundUser }, process.env.ACCESS_TOKEN_SECRET, {
                 expiresIn: '1h'
             });
             return res.status(200).send({ accessToken: accessToken });
