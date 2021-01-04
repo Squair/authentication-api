@@ -88,13 +88,14 @@ app.post('/delete', async (req, res) => {
 app.post('/login', async (req, res) => {
     let errorMessages: IValidationError[] = [];
     try {
-        if (req.body.username == undefined || req.body.username == '') {
-            errorMessages = [...errorMessages, { field: 'username', message: 'Username is required.' }];
-            return res.status(400).send(errorMessages);
-        } else if (req.body.password == undefined || req.body.password == '') {
-            errorMessages = [...errorMessages, { field: 'password', message: 'Password is required.' }];
-            return res.status(400).send(errorMessages);
+        let fields = ['username', 'password'];
+        for (let field of fields){
+            if (req.body[field] == undefined || req.body[field] == ''){
+                errorMessages = [...errorMessages, { field: field, message: `${field[0].toUpperCase() + field.slice(1)} is required.` }];
+            }
         }
+        
+        if (errorMessages.length != 0) return res.status(400).send(errorMessages);
 
         let foundUser = await userModel.getExistingUser(req.body.username);
         if (!foundUser) {
