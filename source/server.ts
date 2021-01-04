@@ -89,31 +89,50 @@ app.post('/login', async (req, res) => {
     let errorMessages: IValidationError[] = [];
     try {
         let fields = ['username', 'password'];
-        for (let field of fields){
-            if (req.body[field] == undefined || req.body[field] == ''){
+        for (let field of fields) {
+            if (req.body[field] == undefined || req.body[field] == '') {
                 errorMessages = [...errorMessages, { field: field, message: `${field[0].toUpperCase() + field.slice(1)} is required.` }];
             }
         }
-        
-        if (errorMessages.length != 0) return res.status(400).send(errorMessages);
 
-        let foundUser = await userModel.getExistingUser(req.body.username);
-        if (!foundUser) {
-            errorMessages = [...errorMessages, { field: 'username', message: `Could not find a user with the username: ${req.body.username}.` }];
-            return res.status(404).send(errorMessages);
-        }
+        //If both fields are empty, stop execution here.
+        if (errorMessages.length == fields.length) return res.status(400).send(errorMessages);
 
-        //Compare hashed passwords, if match login, otherwise reject
-        if (await bcrypt.compare(req.body.password, foundUser.password)) {
-            //Uses HMAC SHA256 as encryption method by default, sign using secret token from .env file
-            const accessToken: string = jwt.sign(foundUser, process.env.ACCESS_TOKEN_SECRET, {
-                expiresIn: '1h'
-            });
-            return res.status(200).send({ accessToken: accessToken });
-        } else {
-            errorMessages = [...errorMessages, { field: 'password', message: 'The password you entered is incorrect.' }];
-            return res.status(403).send(errorMessages);
-        }
+        //Check fields are schema valid.
+        let document: IUser = new userSchema({ username: req.body.username, password: req.body.password });
+        await document.validate(async (validateErrors: { errors: [{ path: string, message: string }] }) => {
+            if (validateErrors) {
+                //Filter out fields that already have existing errors
+                let jsonArr = Object.keys(validateErrors.errors)
+                let fieldsWithoutExistingErrors = jsonArr.filter((schemaErr) => errorMessages[schemaErr] == undefined || errorMessages[schemaErr] == '')
+
+                for (let validationError of fieldsWithoutExistingErrors) {
+                    let error: IValidationError = { field: validateErrors.errors[validationError].path, message: validateErrors.errors[validationError].message };
+                    errorMessages = [...errorMessages, error];
+                }
+
+                return res.status(400).send(errorMessages);
+            } else {
+                //Check user exists
+                let foundUser = await userModel.getExistingUser(req.body.username);
+                if (!foundUser) {
+                    errorMessages = [...errorMessages, { field: 'username', message: `Could not find a user with the username: ${req.body.username}.` }];
+                    return res.status(404).send(errorMessages);
+                }
+
+                //Compare hashed passwords, if match login, otherwise return forbidden
+                if (await bcrypt.compare(req.body.password, foundUser.password)) {
+                    //Uses HMAC SHA256 as encryption method by default, sign using secret token from .env file
+                    const accessToken: string = jwt.sign(foundUser, process.env.ACCESS_TOKEN_SECRET, {
+                        expiresIn: '1h'
+                    });
+                    return res.status(200).send({ accessToken: accessToken });
+                } else {
+                    errorMessages = [...errorMessages, { field: 'password', message: 'The password you entered is incorrect.' }];
+                    return res.status(403).send(errorMessages);
+                }
+            }
+        });
     } catch (err) {
         return res.status(500).send({ message: `Something went wrong while trying to login: ${err}` });
     }
