@@ -1,4 +1,4 @@
-import userSchema from '../schema/userSchema.js';
+import userSchema, { IUser } from '../schema/userSchema';
 import bcrypt from 'bcrypt';
 
 //Insert one document into collection
@@ -7,7 +7,7 @@ const insertUser = async (data, res) => {
     let document = new userSchema(data);
     document.save((err) => {
         if (err) return res.status(400).send(err);
-        res.status(201).send({message: "Successfully created user."});
+        res.status(201).send({ message: "Successfully created user." });
     });
 }
 
@@ -17,7 +17,7 @@ const getUsers = async () => {
 }
 
 //Check to see if user already exists
-const getExistingUser = async (username, res, usersToSearch = null) => {
+const getExistingUser = async (username: string, usersToSearch: IUser[] = null) => {
     if (usersToSearch === null) {
         usersToSearch = await getUsers();
     }

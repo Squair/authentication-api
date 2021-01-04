@@ -1,8 +1,11 @@
-import mongoose from 'mongoose';
+import mongoose, { Schema, Document } from 'mongoose';
 
-const Schema = mongoose.Schema;
+export interface IUser extends Document {
+    username: string;
+    password: string;
+}
 
-const userSchema = new Schema({
+const userSchema:Schema = new Schema({
     username: { 
         type: String, 
         match: [/\S+@\S+\.\S+/, 'Please enter a valid email address.'], 
@@ -15,6 +18,4 @@ const userSchema = new Schema({
     }
 });
 
-const user = mongoose.model('users', userSchema);
-
-export default user;
+export default mongoose.model<IUser>('users', userSchema);

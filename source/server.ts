@@ -1,11 +1,11 @@
 import express from 'express';
-import dotenv from 'dotenv';
+import * as dotenv from 'dotenv';
 dotenv.config();
 
 //Mongodb
-import mongooseConnection from './source/dbConnection.js'
-import userModel from './source/userModel.js';
-import userSchema from './schema/userSchema.js';
+import mongooseConnection from './dbConnection'
+import userModel from './userModel';
+import userSchema, { IUser } from '../schema/userSchema';
 
 //Used for hashing passwords
 import bcrypt from 'bcrypt';
@@ -16,6 +16,8 @@ import jwt from 'jsonwebtoken';
 
 //Allow CORS requests
 import cors from 'cors';
+
+import { IValidationError } from '../interfaces/validationError';
 
 //TODO: Implement https
 
@@ -36,36 +38,35 @@ app.use(express.json());
 
 //GET /users reads users from file and returns them in json
 app.get('/users', async (req, res) => {
-    let json = await userModel.getUsers();
+    let json: IUser[] = await userModel.getUsers();
     res.status(200).json(json);
 });
 
 //POST /register will try to register a new user and add them to users.json
 app.post('/register', async (req, res) => {
+    let errorMessages: IValidationError[] = []
     try {
-        let errorMessages = []
-
         //Check if username already exists, otherwise create user
-        if (!await userModel.getExistingUser(req.body.username, res)) {
+        if (!await userModel.getExistingUser(req.body.username)) {
             //Check fields are schema valid.
-            let document = new userSchema({ username: req.body.username, password: req.body.password });
-            await document.validate(async (validateErrors) => {
+            let document: IUser = new userSchema({ username: req.body.username, password: req.body.password });
+            await document.validate(async (validateErrors: { errors: [{ path: string, message: string }] }) => {
                 if (validateErrors) {
-                    Object.keys(validateErrors.errors).forEach((error) => {
-                        errorMessages = [...errorMessages, { field: validateErrors.errors[error].path, message: validateErrors.errors[error].message }]
-                    });
+                    for (let validationError in validateErrors.errors) {
+                        let error: IValidationError = { field: validateErrors.errors[validationError].path, message: validateErrors.errors[validationError].message };
+                        errorMessages = [...errorMessages, error];
+                    }
                     return res.status(400).send(errorMessages);
                 } else {
                     return await userModel.createNewUser(req.body.username, req.body.password, res);
                 }
             });
-
         } else {
-            errorMessages = [...errorMessages, { field: "username", message: "A user with that username already exists." }]
+            errorMessages = [...errorMessages, { field: "username", message: "A user with that username already exists." }];
             return res.status(409).send(errorMessages);
         }
     } catch (err) {
-        errorMessages = [...errorMessages, { field: "username", message: "A user with that username already exists." }]
+        errorMessages = [...errorMessages, { field: "Unknown", message: err }];
         return res.status(500).send(errorMessages);
     }
 });
@@ -85,27 +86,32 @@ app.post('/delete', async (req, res) => {
 });
 
 app.post('/login', async (req, res) => {
+    let errorMessages: IValidationError[] = [];
     try {
         if (req.body.username == undefined || req.body.username == '') {
-            return res.status(400).send({ message: "Username is required." });
+            errorMessages = [...errorMessages, { field: 'username', message: 'Username is required.' }];
+            return res.status(400).send(errorMessages);
         } else if (req.body.password == undefined || req.body.password == '') {
-            return res.status(400).send({ message: "Password is required." });
+            errorMessages = [...errorMessages, { field: 'password', message: 'Password is required.' }];
+            return res.status(400).send(errorMessages);
         }
 
-        let foundUser = await userModel.getExistingUser(req.body.username, res);
+        let foundUser = await userModel.getExistingUser(req.body.username);
         if (!foundUser) {
-            return res.status(404).send({ message: `Could not find a user with the username: ${req.body.username}.` });
+            errorMessages = [...errorMessages, { field: 'username', message: `Could not find a user with the username: ${req.body.username}.` }];
+            return res.status(404).send(errorMessages);
         }
 
         //Compare hashed passwords, if match login, otherwise reject
         if (await bcrypt.compare(req.body.password, foundUser.password)) {
             //Uses HMAC SHA256 as encryption method by default, sign using secret token from .env file
-            const accessToken = jwt.sign({ user: foundUser }, process.env.ACCESS_TOKEN_SECRET, {
+            const accessToken: string = jwt.sign(foundUser, process.env.ACCESS_TOKEN_SECRET, {
                 expiresIn: '1h'
             });
             return res.status(200).send({ accessToken: accessToken });
         } else {
-            return res.status(403).send({ message: "The password you entered is incorrect." });
+            errorMessages = [...errorMessages, { field: 'password', message: 'The password you entered is incorrect.' }];
+            return res.status(403).send(errorMessages);
         }
     } catch (err) {
         return res.status(500).send({ message: `Something went wrong while trying to login: ${err}` });
@@ -114,18 +120,18 @@ app.post('/login', async (req, res) => {
 
 app.post('/validateToken', async (req, res) => {
     try {
-        let accessToken = req.body.accessToken;
+        let accessToken: string = req.body.accessToken;
 
         if (accessToken == null) {
-            return res.sendStatus(400).send({ message: "accessToken was null." });
+            return res.sendStatus(400).send({ message: "parameter: accessToken cannot be null." });
         }
 
         //Verify the token using secret key from .env file and return user if valid
-        jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+        jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET, (err, decoded: IUser) => {
             if (err) {
                 return res.status(403).send({ message: "Token is not valid." });
             } else {
-                return res.status(200).send(decoded.user);
+                return res.status(200).send(decoded.username);
             }
         });
     } catch (e) {

@@ -1,12 +1,13 @@
-import mongoose from 'mongoose';
+import mongoose, { ConnectionOptions } from 'mongoose';
 import dotenv from 'dotenv';
 dotenv.config();
 
-const uri = `mongodb://${process.env.IP}:${process.env.MONGO_PORT}/${process.env.MONGO_COLLECTION}`;
-const reconnectTimeout = 5000;
+const uri: string = `mongodb://${process.env.IP}:${process.env.MONGO_PORT}/${process.env.MONGO_COLLECTION}`;
+const reconnectTimeout: number = 5000;
 
 const connect = async() => {
-    mongoose.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true, auto_reconnect: true }).catch(err => console.log(err.reason));
+    let options: ConnectionOptions = { useNewUrlParser: true, useUnifiedTopology: true };
+    mongoose.connect(uri, options).catch(err => console.log(err.reason));
 }
 
 mongoose.connection.on('connected', () => {

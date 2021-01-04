@@ -1,5 +1,5 @@
 import chai from 'chai';
-import userModel from  '../schema/userSchema.js'
+import userModel from  '../schema/userSchema'
 
 const { expect } = chai;
 
