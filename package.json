@@ -19,13 +19,12 @@
     "esm": "^3.2.25",
     "express": "^4.17.1",
     "jsonwebtoken": "^8.5.1",
-    "mongodb": "^3.5.7",
-    "mongoose": "^5.9.15",
+    "mongoose-db-connection": "^1.0.3",
     "node-localstorage": "^2.1.6"
   },
   "devDependencies": {
-    "@types/body-parser": "^1.19.0",
     "@types/bcrypt": "^3.0.0",
+    "@types/body-parser": "^1.19.0",
     "@types/chai": "^4.2.14",
     "@types/cors": "^2.8.9",
     "@types/express": "^4.17.9",

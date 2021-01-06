@@ -3,7 +3,8 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 
 //Mongodb
-import mongooseConnection from './dbConnection'
+import dbConnection from 'mongoose-db-connection';
+
 import userModel from './userModel';
 import userSchema, { IUser } from '../schema/userSchema';
 
@@ -30,7 +31,7 @@ import { IValidationError } from '../interfaces/validationError';
 
 const app = express();
 
-mongooseConnection.connect();
+dbConnection.connect(`mongodb://${process.env.IP}:${process.env.MONGO_PORT}/${process.env.MONGO_COLLECTION}`);
 
 app.use(cors({ origin: '*' }));
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -50,10 +51,11 @@ app.post('/register', async (req, res) => {
         if (!await userModel.getExistingUser(req.body.username)) {
             //Check fields are schema valid.
             let document: IUser = new userSchema({ username: req.body.username, password: req.body.password });
-            await document.validate(async (validateErrors: { errors: [{ path: string, message: string }] }) => {
+            document.validate(async (validateErrors: any) => {
                 if (validateErrors) {
-                    for (let validationError in validateErrors.errors) {
-                        let error: IValidationError = { field: validateErrors.errors[validationError].path, message: validateErrors.errors[validationError].message };
+                    let fieldErrors: { errors: [{ path: string, message: string }] } = validateErrors;
+                    for (let fieldError in fieldErrors.errors) {
+                        let error: IValidationError = { field: fieldErrors.errors[fieldError].path, message: fieldErrors.errors[fieldError].message };
                         errorMessages = [...errorMessages, error];
                     }
                     return res.status(400).send(errorMessages);
@@ -100,17 +102,18 @@ app.post('/login', async (req, res) => {
 
         //Check fields are schema valid.
         let document: IUser = new userSchema({ username: req.body.username, password: req.body.password });
-        await document.validate(async (validateErrors: { errors: [{ path: string, message: string }] }) => {
+        document.validate(async (validateErrors: any) => {
             if (validateErrors) {
+                let fieldErrors: { errors: [{ path: string, message: string }] } = validateErrors;
+                
                 //Filter out fields that already have existing errors
-                let jsonArr = Object.keys(validateErrors.errors)
-                let fieldsWithoutExistingErrors = jsonArr.filter((schemaErr) => errorMessages[schemaErr] == undefined || errorMessages[schemaErr] == '')
+                let jsonArr = Object.keys(fieldErrors.errors);
+                let fieldsWithoutExistingErrors = jsonArr.filter((schemaErr) => errorMessages[schemaErr] == undefined || errorMessages[schemaErr] == '');
 
                 for (let validationError of fieldsWithoutExistingErrors) {
-                    let error: IValidationError = { field: validateErrors.errors[validationError].path, message: validateErrors.errors[validationError].message };
+                    let error: IValidationError = { field: fieldErrors.errors[validationError].path, message: fieldErrors.errors[validationError].message };
                     errorMessages = [...errorMessages, error];
                 }
-
                 return res.status(400).send(errorMessages);
             } else {
                 //Check user exists
@@ -167,4 +170,3 @@ app.post('/validateToken', async (req, res) => {
 
 app.listen(process.env.HTTP_PORT);
 
-export default app;

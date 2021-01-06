@@ -20,7 +20,7 @@ const getExistingUser = async (username: string, usersToSearch: IUser[] = null) 
     if (usersToSearch === null) {
         usersToSearch = await getUsers();
     }
-    return await usersToSearch.find(users => users.username === username);
+    return usersToSearch.find(users => users.username === username);
 }
 
 const createNewUser = async (username: string, password: string, res: Response) => {
@@ -32,7 +32,7 @@ const createNewUser = async (username: string, password: string, res: Response) 
 
 //Filter the users in users.json and rewrite new file
 const deleteUser = async (username: string, res: Response) => {
-    userSchema.findOneAndDelete({ username: `${username}` }, (err) => {
+    userSchema.findOneAndDelete({ username: `${username}` }, null, (err) => {
         if (err) return res.status(500).send(err);
         res.status(200).send("User was successfully deleted.");
     });
