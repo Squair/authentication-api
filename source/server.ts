@@ -5,8 +5,8 @@ dotenv.config();
 //Mongodb
 import * as dbConnection from 'mongoose-db-connection';
 
-import userModel from './userModel';
-import userSchema, { IUser } from '../schema/userSchema';
+import userOperations from './userOperations';
+import { IUser, UserModel } from 'mongoose-user-schema';
 
 //Used for hashing passwords
 import bcrypt from 'bcrypt';
@@ -39,7 +39,7 @@ app.use(express.json());
 
 //GET /users reads users from file and returns them in json
 app.get('/users', async (req, res) => {
-    let json: IUser[] = await userModel.getUsers();
+    let json: IUser[] = await userOperations.getUsers();
     res.status(200).json(json);
 });
 
@@ -48,9 +48,9 @@ app.post('/register', async (req, res) => {
     let errorMessages: IValidationError[] = []
     try {
         //Check if username already exists, otherwise create user
-        if (!await userModel.getExistingUser(req.body.username)) {
+        if (!await userOperations.getExistingUser(req.body.username)) {
             //Check fields are schema valid.
-            let document: IUser = new userSchema({ username: req.body.username, password: req.body.password });
+            let document: IUser = new UserModel({ username: req.body.username, password: req.body.password });
             document.validate(async (validateErrors: any) => {
                 if (validateErrors) {
                     let fieldErrors: { errors: [{ path: string, message: string }] } = validateErrors;
@@ -60,7 +60,7 @@ app.post('/register', async (req, res) => {
                     }
                     return res.status(400).send(errorMessages);
                 } else {
-                    return await userModel.createNewUser(req.body.username, req.body.password, res);
+                    return await userOperations.createNewUser(req.body.username, req.body.password, res);
                 }
             });
         } else {
@@ -77,8 +77,8 @@ app.post('/register', async (req, res) => {
 app.post('/delete', async (req, res) => {
     try {
         //If they exist delete otherwise return error response
-        if (await userModel.getExistingUser(req.body.username)) {
-            return await userModel.deleteUser(req.body.username, res);
+        if (await userOperations.getExistingUser(req.body.username)) {
+            return await userOperations.deleteUser(req.body.username, res);
         } else {
             return res.status(404).send({ message: `Could not delete user ${req.body.username} as they don't exist.` });
         }
@@ -101,7 +101,7 @@ app.post('/login', async (req, res) => {
         if (errorMessages.length == fields.length) return res.status(400).send(errorMessages);
 
         //Check fields are schema valid.
-        let document: IUser = new userSchema({ username: req.body.username, password: req.body.password });
+        let document: IUser = new UserModel({ username: req.body.username, password: req.body.password });
         document.validate(async (validateErrors: any) => {
             if (validateErrors) {
                 let fieldErrors: { errors: [{ path: string, message: string }] } = validateErrors;
@@ -117,7 +117,7 @@ app.post('/login', async (req, res) => {
                 return res.status(400).send(errorMessages);
             } else {
                 //Check user exists
-                let foundUser = await userModel.getExistingUser(req.body.username);
+                let foundUser = await userOperations.getExistingUser(req.body.username);
                 if (!foundUser) {
                     errorMessages = [...errorMessages, { field: 'username', message: `Could not find a user with the username: ${req.body.username}.` }];
                     return res.status(404).send(errorMessages);

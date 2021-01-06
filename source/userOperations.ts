@@ -1,4 +1,4 @@
-import userSchema, { IUser } from '../schema/userSchema';
+import { IUser, UserModel } from 'mongoose-user-schema';
 import { Response } from 'express';
 import bcrypt from 'bcrypt';
 
@@ -12,7 +12,7 @@ const insertUser = async (user: IUser, res: Response) => {
 
 const getUsers = async (): Promise<IUser[]> => {
     //Return all users
-    return await userSchema.find({});
+    return await UserModel.find({});
 }
 
 //Check to see if user already exists
@@ -26,13 +26,13 @@ const getExistingUser = async (username: string, usersToSearch: IUser[] = null) 
 const createNewUser = async (username: string, password: string, res: Response) => {
     const hashPass = await bcrypt.hash(password, 10);
     //Create new document using Model
-    let newUser: IUser = new userSchema({ username: username, password: hashPass });
+    let newUser: IUser = new UserModel({ username: username, password: hashPass });
     return await insertUser(newUser, res);
 }
 
 //Filter the users in users.json and rewrite new file
 const deleteUser = async (username: string, res: Response) => {
-    userSchema.findOneAndDelete({ username: `${username}` }, null, (err) => {
+    UserModel.findOneAndDelete({ username: `${username}` }, null, (err) => {
         if (err) return res.status(500).send(err);
         res.status(200).send("User was successfully deleted.");
     });
