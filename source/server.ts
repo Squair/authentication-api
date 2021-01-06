@@ -3,7 +3,7 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 
 //Mongodb
-import dbConnection from 'mongoose-db-connection';
+import * as dbConnection from 'mongoose-db-connection';
 
 import userModel from './userModel';
 import userSchema, { IUser } from '../schema/userSchema';
@@ -31,7 +31,7 @@ import { IValidationError } from '../interfaces/validationError';
 
 const app = express();
 
-dbConnection.connect(`mongodb://${process.env.IP}:${process.env.MONGO_PORT}/${process.env.MONGO_COLLECTION}`);
+dbConnection.Connect(`mongodb://${process.env.IP}:${process.env.MONGO_PORT}/${process.env.MONGO_COLLECTION}`);
 
 app.use(cors({ origin: '*' }));
 app.use(bodyParser.urlencoded({ extended: true }));
