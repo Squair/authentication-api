@@ -20,7 +20,7 @@
     "express": "^4.17.1",
     "jsonwebtoken": "^8.5.1",
     "mongoose-db-connection": "^1.0.3",
-    "mongoose-user-schema": "^1.0.0",
+    "mongoose-user-schema": "^1.0.1",
     "node-localstorage": "^2.1.6"
   },
   "devDependencies": {
