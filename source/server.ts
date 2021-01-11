@@ -105,7 +105,7 @@ app.post('/login', async (req, res) => {
         document.validate(async (validateErrors: any) => {
             if (validateErrors) {
                 let fieldErrors: { errors: [{ path: string, message: string }] } = validateErrors;
-                
+
                 //Filter out fields that already have existing errors
                 let jsonArr = Object.keys(fieldErrors.errors);
                 let fieldsWithoutExistingErrors = jsonArr.filter((schemaErr) => errorMessages[schemaErr] == undefined || errorMessages[schemaErr] == '');
@@ -117,7 +117,7 @@ app.post('/login', async (req, res) => {
                 return res.status(400).send(errorMessages);
             } else {
                 //Check user exists
-                let foundUser = await userOperations.getExistingUser(req.body.username);
+                let foundUser = await UserModel.findOne({ username: req.body.username });
                 if (!foundUser) {
                     errorMessages = [...errorMessages, { field: 'username', message: `Could not find a user with the username: ${req.body.username}.` }];
                     return res.status(404).send(errorMessages);
@@ -126,7 +126,7 @@ app.post('/login', async (req, res) => {
                 //Compare hashed passwords, if match login, otherwise return forbidden
                 if (await bcrypt.compare(req.body.password, foundUser.password)) {
                     //Uses HMAC SHA256 as encryption method by default, sign using secret token from .env file
-                    const accessToken: string = jwt.sign(foundUser, process.env.ACCESS_TOKEN_SECRET, {
+                    const accessToken: string = jwt.sign({ _id: foundUser._id, username: foundUser.username }, process.env.ACCESS_TOKEN_SECRET, {
                         expiresIn: '1h'
                     });
                     return res.status(200).send({ accessToken: accessToken });
@@ -150,11 +150,11 @@ app.post('/validateToken', async (req, res) => {
         }
 
         //Verify the token using secret key from .env file and return user if valid
-        jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET, (err, decoded: IUser) => {
+        jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET, (err, decoded: { _id: string, username: string }) => {
             if (err) {
                 return res.status(403).send({ message: "Token is not valid." });
             } else {
-                return res.status(200).send(decoded.username);
+                return res.status(200).send(decoded);
             }
         });
     } catch (e) {
