@@ -146,7 +146,7 @@ app.post('/validateToken', async (req, res) => {
         let accessToken: string = req.body.accessToken;
 
         if (accessToken == null) {
-            return res.sendStatus(400).send({ message: "parameter: accessToken cannot be null." });
+            return res.status(400).send({ message: "parameter: accessToken cannot be null." });
         }
 
         //Verify the token using secret key from .env file and return user if valid

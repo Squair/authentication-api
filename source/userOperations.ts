@@ -15,6 +15,12 @@ const getUsers = async (): Promise<IUser[]> => {
     return await UserModel.find({});
 }
 
+const createUser = async (username: string, password: string) => {
+    let newUser: IUser = new UserModel({ username: username, password: password });
+    await newUser.save();
+}
+
+
 //Check to see if user already exists
 const getExistingUser = async (username: string, usersToSearch: IUser[] = null) => {
     if (usersToSearch === null) {
