@@ -3,11 +3,9 @@ import { Response } from 'express';
 import bcrypt from 'bcrypt';
 
 //Insert one document into collection
-const insertUser = async (user: IUser, res: Response) => {
-    user.save((err) => {
-        if (err) return res.status(400).send(err);
-        res.status(201).send({ message: "Successfully created user." });
-    });
+const insertUser = async (user: IUser, res: Response): Promise<Response> => {
+    await user.save();
+    return res.status(201).send({ message: "Successfully created user." });
 }
 
 const getUsers = async (): Promise<IUser[]> => {
@@ -15,21 +13,15 @@ const getUsers = async (): Promise<IUser[]> => {
     return await UserModel.find({});
 }
 
-const createUser = async (username: string, password: string) => {
-    let newUser: IUser = new UserModel({ username: username, password: password });
-    await newUser.save();
-}
-
-
 //Check to see if user already exists
-const getExistingUser = async (username: string, usersToSearch: IUser[] = null) => {
+const getExistingUser = async (username: string, usersToSearch: IUser[] = null): Promise<IUser> => {
     if (usersToSearch === null) {
         usersToSearch = await getUsers();
     }
     return usersToSearch.find(users => users.username === username);
 }
 
-const createNewUser = async (username: string, password: string, res: Response) => {
+const createNewUser = async (username: string, password: string, res: Response): Promise<Response> => {
     const hashPass = await bcrypt.hash(password, 10);
     //Create new document using Model
     let newUser: IUser = new UserModel({ username: username, password: hashPass });
@@ -37,11 +29,9 @@ const createNewUser = async (username: string, password: string, res: Response) 
 }
 
 //Filter the users in users.json and rewrite new file
-const deleteUser = async (username: string, res: Response) => {
-    UserModel.findOneAndDelete({ username: `${username}` }, null, (err) => {
-        if (err) return res.status(500).send(err);
-        res.status(200).send("User was successfully deleted.");
-    });
+const deleteUser = async (username: string, res: Response): Promise<Response> => {
+    await UserModel.findOneAndDelete({ username: `${username}` });
+    return res.status(200).send({ message: "User was successfully deleted." });
 }
 
 export default {
