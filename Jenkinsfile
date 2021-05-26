@@ -3,6 +3,7 @@ pipeline {
     environment {
         CI = 'true'
         IP = "${InetAddress.localHost.hostAddress}"
+        DOCKER_CONTEXT = 'raspberry-pi'
     }
     stages {
         stage('Build') {
@@ -20,8 +21,8 @@ pipeline {
         }
         stage('Deploy') {
             steps {
-                //Build the image from docker-compose.yml
-                sh './jenkins/scripts/deploy.sh'
+                //Deploy and run container on docker context in detached state
+                sh "docker-compose --context ${DOCKER_CONTEXT} up -d"
             }
         }
     }
