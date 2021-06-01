@@ -10,8 +10,8 @@ import bodyParser from 'body-parser';
 //Allow CORS requests
 import cors from 'cors';
 
-import accountController from '../controllers/accountController';
-import accountValidation from '../validation/accountValidation';
+import accountController from './controllers/accountController';
+import accountValidation from './validation/accountValidation';
 
 //TODO: Implement https
 

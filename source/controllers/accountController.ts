@@ -1,6 +1,6 @@
 
-import { IValidationError } from '../interfaces/validationError';
-import userOperations from '../source/userOperations';
+import { IValidationError } from '../../interfaces/validationError';
+import userOperations from '../userOperations';
 import { IUser, UserModel } from 'mongoose-user-schema';
 import { Request, Response } from 'express';
 import bcrypt from 'bcrypt';
