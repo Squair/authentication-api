@@ -1,6 +1,6 @@
 FROM node:alpine
 
-RUN apk add python make gcc g++
+RUN apk add python3 make gcc g++
 
 RUN mkdir -p /usr/src/app
 
