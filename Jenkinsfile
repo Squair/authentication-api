@@ -1,20 +1,12 @@
 pipeline {
-    agent any
+    agent { dockerfile true }
     environment {
         CI = 'true'
         IP = "${InetAddress.localHost.hostAddress}"
         DOCKER_CONTEXT = 'raspberry-pi'
     }
     stages {
-        stage('Build') {
-            agent { dockerfile true }
-            steps {
-                echo "Running build..."
-                sh 'npm install' 
-            }
-        }
         stage('Test') {
-            agent { dockerfile true }
             steps {
                 sh './jenkins/scripts/test.sh'
             }
