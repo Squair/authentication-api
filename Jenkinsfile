@@ -16,7 +16,7 @@ pipeline {
         stage('Test') {
             agent { dockerfile true }
             steps {
-                sh './jenkins/scripts/test.sh'
+                //sh './jenkins/scripts/test.sh'
             }
         }
         stage('Deploy') {
