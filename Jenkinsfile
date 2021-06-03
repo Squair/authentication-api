@@ -3,7 +3,7 @@ pipeline {
     environment {
         CI = 'true'
         DOCKER_CONTEXT = 'raspberry-pi'
-        MONGO_PORT = '27107'
+        MONGO_PORT = '27017'
         MONGO_IP = 'mongo'
         HTTP_PORT='4000'
         HTTPS_PORT='4443'
