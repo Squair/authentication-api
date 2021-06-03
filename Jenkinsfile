@@ -14,7 +14,8 @@ pipeline {
         stage('Deploy') {
             steps {
                 //Deploy and run container on docker context in detached state
-                sh "DOCKER_HOST='ssh://ubuntu@ubuntu' docker-compose up -d"
+                sh "DOCKER_HOST='ssh://ubuntu@ubuntu' docker-compose up --force-recreate -d"
+                sh "docker image prune -f"
             }
         }
     }
