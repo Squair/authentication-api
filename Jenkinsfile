@@ -6,11 +6,6 @@ pipeline {
         DOCKER_CONTEXT = 'raspberry-pi'
     }
     stages {
-        stage('Test') {
-            steps {
-                sh './jenkins/scripts/test.sh'
-            }
-        }
         stage('Deploy') {
             steps {
                 //Deploy and run container on docker context in detached state
