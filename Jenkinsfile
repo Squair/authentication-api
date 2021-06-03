@@ -3,7 +3,7 @@ pipeline {
     environment {
         CI = 'true'
         MONGO_PORT = "27017"
-        MONGO_IP = "${InetAddress.localHost.hostAddress}"
+        MONGO_IP = "ubuntu"
         HTTP_PORT="4000"
         HTTPS_PORT="4443"
         MONGO_COLLECTION="Temperature"
