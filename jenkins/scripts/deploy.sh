@@ -1,7 +1,14 @@
 #!/usr/bin/env sh
 
-echo "Building docker compose..."
-docker-compose build
+DOCKER_HOST='ssh://ubuntu@ubuntu'
+
+
+docker-compose rm -f
+docker-compose pull
 
 echo "Spinning up containers..."
-docker-compose up -d
+docker-compose up --build -d
+
+echo "Pruning images..."
+docker image prune -f
+
