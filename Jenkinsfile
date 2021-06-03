@@ -9,7 +9,7 @@ pipeline {
         stage('Deploy') {
             steps {
                 //Deploy and run container on docker context in detached state
-                sh "docker-compose --context ${DOCKER_CONTEXT} --verbose up -d"
+                sh "DOCKER_HOST='ssh://ubuntu@ubuntu' docker-compose --verbose up -d"
             }
         }
     }
