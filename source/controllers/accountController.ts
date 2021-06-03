@@ -44,7 +44,7 @@ const Register = async (req: Request, res: Response): Promise<Response> => {
             return res.status(400).send(errorMessages);
         }
 
-        errorMessages = [...errorMessages, { field: "Unknown", message: s }];
+        errorMessages = [...errorMessages, { field: "Unknown", message: "Testing" }];
         return res.status(500).send(errorMessages);
     }
 };
