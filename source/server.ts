@@ -24,7 +24,7 @@ import accountValidation from './validation/accountValidation';
 
 const app = express();
 
-dbConnection.Connect(`mongodb://${process.env.IP}:${process.env.MONGO_PORT}/${process.env.MONGO_COLLECTION}`);
+dbConnection.Connect(`mongodb://${process.env.MONGO_IP}:${process.env.MONGO_PORT}/${process.env.MONGO_COLLECTION}`);
 
 app.use(cors({ origin: '*' }));
 app.use(bodyParser.urlencoded({ extended: true }));

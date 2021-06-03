@@ -2,8 +2,9 @@ pipeline {
     agent any
     environment {
         CI = 'true'
-        IP = "${InetAddress.localHost.hostAddress}"
         DOCKER_CONTEXT = 'raspberry-pi'
+        MONGO_PORT = '27107'
+        MONGO_IP = 'mongo'
     }
     stages {
         stage('Deploy') {
