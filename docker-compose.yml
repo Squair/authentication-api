@@ -13,5 +13,5 @@ services:
       - mongo
 networks:
   backend:
-    external: true
+    external: false
     name: backend
