@@ -31,7 +31,7 @@ let options: ConnectionOptions = { useNewUrlParser: true, reconnectTries: Number
 mongoose.connection.on('connected', () => {
     console.log("Connected to mongodb using mongoose");
 });
-mongoose.connect(`mongodb://${process.env.MONGO_IP}:${process.env.MONGO_PORT}/${process.env.MONGO_COLLECTION}`, options).catch(err => console.log(err.reason));
+mongoose.connect(`mongodb://${process.env.MONGO_IP}:${process.env.MONGO_PORT}/${process.env.MONGO_COLLECTION}`, options).then(() => console.log("Connected"));
 
 //dbConnection.Connect(`mongodb://${process.env.MONGO_IP}:${process.env.MONGO_PORT}/${process.env.MONGO_COLLECTION}`);
 
