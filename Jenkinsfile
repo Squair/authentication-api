@@ -2,14 +2,13 @@ pipeline {
     agent any
     environment {
         CI = 'true'
-        DOCKER_CONTEXT = 'raspberry-pi'
-        MONGO_PORT = '27017'
-        MONGO_IP = 'mongo'
-        HTTP_PORT='4000'
-        HTTPS_PORT='4443'
-        MONGO_COLLECTION='Temperature'
+        MONGO_PORT = "27017"
+        MONGO_IP = "${InetAddress.localHost.hostAddress}"
+        HTTP_PORT="4000"
+        HTTPS_PORT="4443"
+        MONGO_COLLECTION="Temperature"
         ACCESS_TOKEN_SECRET=credentials('private-key')
-        ACCESS_TOKEN_EXPIRY='1h'
+        ACCESS_TOKEN_EXPIRY="1h"
     }
     stages {
         stage('Deploy') {
