@@ -6,7 +6,7 @@ services:
     restart: always
     build: .
     networks:
-      - backend
+      backend: {}
     ports:
       - "4000:4000"
     links:
@@ -16,8 +16,7 @@ services:
     image: mongo
     restart: always
     networks:
-    backend:
-      - backend
+      backend: {}
     ports:
       - "27017:27017"
     volumes:
