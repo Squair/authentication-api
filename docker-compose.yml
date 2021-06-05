@@ -1,8 +1,7 @@
 version: "3"
 services:
-  authentication_server:
+  authentication_api:
     container_name: authentication-api
-    image: authentication_server
     restart: always
     build: .
     networks:
