@@ -13,8 +13,6 @@ const GetUsers = async (req: Request, res: Response): Promise<Response> => {
 }
 
 const Register = async (req: Request, res: Response): Promise<Response> => {
-    await dbConnection.Connect(`mongodb://${process.env.MONGO_IP}:${process.env.MONGO_PORT}/${process.env.MONGO_COLLECTION}`).then(() => console.log("Connected to mongo db"));
-
     let errorMessages: IValidationError[] = [];
     try {
         //Check if username already exists, otherwise create user
