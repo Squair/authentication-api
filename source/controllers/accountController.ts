@@ -13,24 +13,17 @@ const GetUsers = async (req: Request, res: Response): Promise<Response> => {
 
 const Register = async (req: Request, res: Response): Promise<Response> => {
     let errorMessages: IValidationError[] = [];
-    let s = "";
     try {
         //Check if username already exists, otherwise create user
-        s += " 1 -> "
 
         if (await userOperations.getExistingUser(req.body.username)) {
             errorMessages = [...errorMessages, { field: "username", message: "A user with that username already exists." }];
             return res.status(409).send(errorMessages);
         }
-        s += " 2 -> "
         //Check fields are schema valid.
         let document: IUser = new UserModel({ username: req.body.username, password: req.body.password });
 
-        s += " 3 -> "
-
         await document.validate();
-
-        s += " 4 -> "
 
         return await userOperations.createNewUser(req.body.username, req.body.password, res);
 
@@ -44,8 +37,8 @@ const Register = async (req: Request, res: Response): Promise<Response> => {
             return res.status(400).send(errorMessages);
         }
 
-        errorMessages = [...errorMessages, { field: "Unknown", message: "Testing" }];
-        return res.status(500).send(`Something went wrong: ${err.message}`);
+        errorMessages = [...errorMessages, { field: "Unknown", message: err.message }];
+        return res.status(500).send(errorMessages);
     }
 };
 

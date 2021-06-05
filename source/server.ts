@@ -4,7 +4,6 @@ dotenv.config();
 
 //Mongodb
 import * as dbConnection from 'mongoose-db-connection';
-import mongoose, { ConnectionOptions } from 'mongoose';
 
 import bodyParser from 'body-parser';
 
@@ -24,16 +23,8 @@ import accountValidation from './validation/accountValidation';
 //};
 
 const app = express();
-let options: ConnectionOptions = { useNewUrlParser: true, reconnectTries: Number.MAX_VALUE,
-    reconnectInterval: 500,
-    connectTimeoutMS: 10000, };
 
-mongoose.connection.on('connected', () => {
-    console.log("Connected to mongodb using mongoose");
-});
-mongoose.connect(`mongodb://${process.env.MONGO_IP}:${process.env.MONGO_PORT}/${process.env.MONGO_COLLECTION}`, options).then(() => console.log("Connected"));
-
-//dbConnection.Connect(`mongodb://${process.env.MONGO_IP}:${process.env.MONGO_PORT}/${process.env.MONGO_COLLECTION}`);
+dbConnection.Connect(`mongodb://${process.env.MONGO_IP}:${process.env.MONGO_PORT}/${process.env.MONGO_COLLECTION}`);
 
 app.use(cors({ origin: '*' }));
 app.use(bodyParser.urlencoded({ extended: true }));
