@@ -4,7 +4,7 @@ services:
     container_name: authentication-api
     restart: always
     build: .
-    environment: :
+    environment:
       MONGO_PORT: "${MONGO_PORT}"
       MONGO_IP: "${MONGO_IP}"
       HTTP_PORT: "${HTTP_PORT}"
