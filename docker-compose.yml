@@ -5,13 +5,13 @@ services:
     restart: always
     build: .
     environment: :
-      - MONGO_PORT = "${MONGO_PORT}"
-      - MONGO_IP = "${MONGO_IP}"
-      - HTTP_PORT = "${HTTP_PORT}"
-      - HTTPS_PORT = "${HTTPS_PORT}"
-      - MONGO_COLLECTION = "${MONGO_COLLECTION}"
-      - ACCESS_TOKEN_SECRET = "${ACCESS_TOKEN_SECRET}"
-      - ACCESS_TOKEN_EXPIRY = "${ACCESS_TOKEN_EXPIRY}"
+      MONGO_PORT = "${MONGO_PORT}"
+      MONGO_IP = "${MONGO_IP}"
+      HTTP_PORT = "${HTTP_PORT}"
+      HTTPS_PORT = "${HTTPS_PORT}"
+      MONGO_COLLECTION = "${MONGO_COLLECTION}"
+      ACCESS_TOKEN_SECRET = "${ACCESS_TOKEN_SECRET}"
+      ACCESS_TOKEN_EXPIRY = "${ACCESS_TOKEN_EXPIRY}"
     networks:
       backend: {}
     ports:
