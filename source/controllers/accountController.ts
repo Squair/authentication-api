@@ -5,7 +5,6 @@ import { IUser, UserModel } from 'mongoose-user-schema';
 import { Request, Response } from 'express';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import * as dbConnection from 'mongoose-db-connection';
 
 const GetUsers = async (req: Request, res: Response): Promise<Response> => {
     let json: IUser[] = await userOperations.getUsers();
