@@ -1,8 +1,5 @@
 #!/usr/bin/env sh
 
-
-
-
 DOCKER_HOST='ssh://ubuntu@ubuntu' docker-compose rm -f
 DOCKER_HOST='ssh://ubuntu@ubuntu' docker-compose pull
 

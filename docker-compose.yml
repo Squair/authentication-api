@@ -2,6 +2,7 @@ version: "3"
 services:
   authentication_api:
     container_name: authentication-api
+    image: authentication_api
     restart: always
     build: .
     environment:

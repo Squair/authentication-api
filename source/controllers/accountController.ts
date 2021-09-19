@@ -1,7 +1,7 @@
 
 import { IValidationError } from '../../interfaces/validationError';
 import userOperations from '../userOperations';
-import { IUser, UserModel } from 'mongoose-user-schema';
+import { IUser, IUserBaseDocument, UserModel } from 'mongoose-user-schema';
 import { Request, Response } from 'express';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
@@ -21,8 +21,7 @@ const Register = async (req: Request, res: Response): Promise<Response> => {
             return res.status(409).send(errorMessages);
         }
         //Check fields are schema valid.
-        let document: IUser = new UserModel({ username: req.body.username, password: req.body.password });
-
+        let document: IUserBaseDocument = new UserModel({ username: req.body.username, password: req.body.password });
         await document.validate();
 
         return await userOperations.createNewUser(req.body.username, req.body.password, res);

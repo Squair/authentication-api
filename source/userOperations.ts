@@ -1,10 +1,31 @@
-import { IUser, UserModel } from 'mongoose-user-schema';
+import { IUser } from 'mongoose-user-schema';
 import { Response } from 'express';
 import bcrypt from 'bcrypt';
+import mongoose, { Schema, Types, Document } from 'mongoose';
+
+export interface IUserBaseDocument extends IUser, Document {
+    _id: Types.ObjectId
+}
+
+const userSchema = new Schema({
+    username: {
+        type: String,
+        match: [/\S+@\S+\.\S+/, 'Please enter a valid email address.'],
+        required: [true, 'Email is required.']
+    },
+    password: {
+        type: String,
+        match: [/(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,}/, 'Password must contain at least one number, one lowercase and one uppercase letter and be at least six characters.'],
+        required: [true, 'Password is required.']
+    },
+});
+
+const UserModel = mongoose.model<IUserBaseDocument>('users', userSchema);
 
 //Insert one document into collection
 const insertUser = async (user: IUser, res: Response): Promise<Response> => {
-    await user.save();
+    let newUser: IUserBaseDocument = new UserModel(user);
+    await newUser.save();
     return res.status(201).send({ message: "Successfully created user." });
 }
 

@@ -3,9 +3,7 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 
 //Mongodb
-import * as dbConnection from 'mongoose-db-connection';
-
-import bodyParser from 'body-parser';
+import mongoose from 'mongoose';
 
 //Allow CORS requests
 import cors from 'cors';
@@ -24,10 +22,11 @@ import accountValidation from './validation/accountValidation';
 
 const app = express();
 
-dbConnection.Connect(`mongodb://${process.env.MONGO_IP}:${process.env.MONGO_PORT}/${process.env.MONGO_COLLECTION}`).then(() => console.log("Connected"));
+const uri = `mongodb://${process.env.MONGO_IP}:${process.env.MONGO_PORT}/${process.env.MONGO_COLLECTION}`;
+mongoose.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true }).then(() => console.log("Connected to mongodb using mongoose")).catch(err => console.log(err.reason));
 
 app.use(cors({ origin: '*' }));
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
 //GET /users reads users from file and returns them in json
@@ -51,3 +50,4 @@ app.post('/validateToken', accountValidation.ValidateTokenRequestValid, accountC
 
 app.listen(process.env.HTTP_PORT);
 
+export default app;
